@@ -1,0 +1,90 @@
+{
+  "task": "6-way crystal-structure classification from simulated electron diffraction",
+  "labels": [
+    "sc",
+    "bcc",
+    "fcc",
+    "diamond",
+    "rocksalt",
+    "hcp"
+  ],
+  "chance_level": 0.1667,
+  "compare_conditions": {
+    "dose": 40.0,
+    "orientation_spread": 3.0,
+    "keep_fraction": 0.85
+  },
+  "compare_accuracy": {
+    "classical_rf": 0.5556,
+    "radial_cnn": 0.6583,
+    "pattern_cnn": 0.7111
+  },
+  "compare_macro_f1": {
+    "classical_rf": 0.541,
+    "radial_cnn": 0.6483,
+    "pattern_cnn": 0.7122
+  },
+  "classical_tuning": {
+    "tuned_accuracy": 0.5416666666666666,
+    "default_accuracy": 0.5472222222222223,
+    "best_params": {
+      "clf__max_depth": 16,
+      "clf__min_samples_leaf": 2,
+      "clf__n_estimators": 250
+    },
+    "cv_score": 0.5553333333333333
+  },
+  "dose_accuracy": {
+    "classical_rf": {
+      "8": 0.5458,
+      "15": 0.675,
+      "30": 0.6917,
+      "60": 0.6375,
+      "120": 0.6792,
+      "300": 0.7208
+    },
+    "radial_cnn": {
+      "8": 0.6542,
+      "15": 0.6917,
+      "30": 0.7417,
+      "60": 0.7458,
+      "120": 0.6958,
+      "300": 0.7042
+    },
+    "pattern_cnn": {
+      "8": 0.7,
+      "15": 0.7208,
+      "30": 0.7625,
+      "60": 0.7958,
+      "120": 0.7958,
+      "300": 0.7208
+    }
+  },
+  "leakage": {
+    "chance_level": 0.16666666666666666,
+    "blank_spots_accuracy": {
+      "classical_rf": 0.1792,
+      "radial_cnn": 0.1375,
+      "pattern_cnn": 0.1708
+    },
+    "trained_on_blank_accuracy": 0.1458,
+    "shuffled_label_accuracy": 0.1583
+  },
+  "ablation": {
+    "full": {
+      "test_accuracy": 0.7417,
+      "low_dose_accuracy": 0.7333,
+      "train_accuracy": 0.9897
+    },
+    "fixed_scale": {
+      "test_accuracy": 0.7083,
+      "low_dose_accuracy": 0.675,
+      "train_accuracy": 0.8807
+    },
+    "fixed_background": {
+      "test_accuracy": 0.7083,
+      "low_dose_accuracy": 0.7042,
+      "train_accuracy": 0.929
+    }
+  }
+}

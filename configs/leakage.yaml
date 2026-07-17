@@ -1,0 +1,10 @@
+# Physics-removed and label-shuffle controls. Every number here must sit at the
+# chance level (1/6 = 0.167); anything above it is a leak.
+mode: leakage
+n_per_class: 40
+seed: 300
+train_pool: 900
+methods:
+  - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}
+  - {name: radial_cnn,   kind: radial,    path: models/radial_cnn.pt}
+  - {name: pattern_cnn,  kind: pattern,   path: models/pattern_cnn.pt}

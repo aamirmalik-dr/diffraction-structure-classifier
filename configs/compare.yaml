@@ -1,0 +1,13 @@
+# One held-out test set at moderate conditions: full confusion matrices,
+# per-class scores, and the classical default-vs-tuned fair-tuning check.
+mode: compare
+n_per_class: 60
+seed: 200
+test_overrides: {dose: 40.0, orientation_spread: 3.0, keep_fraction: 0.85}
+classical_default_check: true
+tune_pool: 1500
+tune_seed: 7
+methods:
+  - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}
+  - {name: radial_cnn,   kind: radial,    path: models/radial_cnn.pt}
+  - {name: pattern_cnn,  kind: pattern,   path: models/pattern_cnn.pt}

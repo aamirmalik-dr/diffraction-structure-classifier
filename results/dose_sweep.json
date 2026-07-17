@@ -1,0 +1,101 @@
+{
+  "mode": "sweep",
+  "axis": "dose",
+  "reference": {
+    "dose": 150.0,
+    "orientation_spread": 2.0,
+    "keep_fraction": 1.0
+  },
+  "rows": [
+    {
+      "value": 8,
+      "classical_rf": {
+        "accuracy": 0.5458333333333333,
+        "macro_f1": 0.5393956285260634
+      },
+      "radial_cnn": {
+        "accuracy": 0.6541666666666667,
+        "macro_f1": 0.6487689051892602
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7,
+        "macro_f1": 0.7001773694228203
+      }
+    },
+    {
+      "value": 15,
+      "classical_rf": {
+        "accuracy": 0.675,
+        "macro_f1": 0.6667706667706668
+      },
+      "radial_cnn": {
+        "accuracy": 0.6916666666666667,
+        "macro_f1": 0.6857786376773719
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7208333333333333,
+        "macro_f1": 0.7229128895795564
+      }
+    },
+    {
+      "value": 30,
+      "classical_rf": {
+        "accuracy": 0.6916666666666667,
+        "macro_f1": 0.6876886984904119
+      },
+      "radial_cnn": {
+        "accuracy": 0.7416666666666667,
+        "macro_f1": 0.7323241973517347
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7625,
+        "macro_f1": 0.7619478726932143
+      }
+    },
+    {
+      "value": 60,
+      "classical_rf": {
+        "accuracy": 0.6375,
+        "macro_f1": 0.6258141623634582
+      },
+      "radial_cnn": {
+        "accuracy": 0.7458333333333333,
+        "macro_f1": 0.732915719898895
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7958333333333333,
+        "macro_f1": 0.7930595682356246
+      }
+    },
+    {
+      "value": 120,
+      "classical_rf": {
+        "accuracy": 0.6791666666666667,
+        "macro_f1": 0.6760899885508663
+      },
+      "radial_cnn": {
+        "accuracy": 0.6958333333333333,
+        "macro_f1": 0.6743824902794513
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7958333333333333,
+        "macro_f1": 0.7862728750044076
+      }
+    },
+    {
+      "value": 300,
+      "classical_rf": {
+        "accuracy": 0.7208333333333333,
+        "macro_f1": 0.715295305347693
+      },
+      "radial_cnn": {
+        "accuracy": 0.7041666666666667,
+        "macro_f1": 0.6902321568879358
+      },
+      "pattern_cnn": {
+        "accuracy": 0.7208333333333333,
+        "macro_f1": 0.7171173397385388
+      }
+    }
+  ]
+}

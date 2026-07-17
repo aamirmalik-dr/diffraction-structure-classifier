@@ -1,0 +1,25 @@
+{
+  "mode": "ablation",
+  "reference": {
+    "dose": 150.0,
+    "orientation_spread": 2.0,
+    "keep_fraction": 1.0
+  },
+  "variants": {
+    "full": {
+      "test_accuracy": 0.7416666666666667,
+      "low_dose_accuracy": 0.7333333333333333,
+      "train_accuracy": 0.9896666666666667
+    },
+    "fixed_scale": {
+      "test_accuracy": 0.7083333333333334,
+      "low_dose_accuracy": 0.675,
+      "train_accuracy": 0.8806666666666667
+    },
+    "fixed_background": {
+      "test_accuracy": 0.7083333333333334,
+      "low_dose_accuracy": 0.7041666666666667,
+      "train_accuracy": 0.929
+    }
+  }
+}

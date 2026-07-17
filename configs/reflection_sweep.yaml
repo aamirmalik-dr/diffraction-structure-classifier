@@ -1,0 +1,10 @@
+# Vary the fraction of visible reflections (missing spots) at fixed dose.
+mode: sweep
+axis: keep_fraction
+values: [0.3, 0.45, 0.6, 0.75, 0.9, 1.0]
+n_per_class: 40
+seed: 130
+methods:
+  - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}
+  - {name: radial_cnn,   kind: radial,    path: models/radial_cnn.pt}
+  - {name: pattern_cnn,  kind: pattern,   path: models/pattern_cnn.pt}

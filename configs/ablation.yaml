@@ -1,0 +1,8 @@
+# Retrain the pattern CNN with one domain-randomisation component removed and
+# re-score. Confirms the network is not leaning on absolute scale or a constant
+# background as a trivial cue.
+mode: ablation
+n_per_class: 40
+seed: 400
+pool_size: 3000
+epochs: 18

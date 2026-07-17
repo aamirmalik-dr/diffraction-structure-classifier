@@ -1,0 +1,10 @@
+# Vary photon dose (noise) at fixed benign orientation and full reflections.
+mode: sweep
+axis: dose
+values: [8, 15, 30, 60, 120, 300]
+n_per_class: 40
+seed: 100
+methods:
+  - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}
+  - {name: radial_cnn,   kind: radial,    path: models/radial_cnn.pt}
+  - {name: pattern_cnn,  kind: pattern,   path: models/pattern_cnn.pt}
