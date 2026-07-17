@@ -64,8 +64,6 @@ chance (0.14 to 0.17), and models trained on blanked patterns or on shuffled
 labels cannot beat chance either. A domain-randomisation ablation confirms that
 holding the camera-length scale or the background fixed does not inflate accuracy.
 
-
-
 ## The six structures
 
 Simple cubic, body-centred cubic, face-centred cubic, diamond cubic, rock salt,
@@ -193,6 +191,13 @@ tests/              pytest suite
   (multiple) scattering, higher-order Laue zones, inelastic background, and
   detector effects. The benchmark measures classifier behaviour within this
   model; absolute numbers will not transfer to an instrument.
+- The atomic scattering factor is a single Gaussian linear in Z. It reproduces
+  the systematic absences exactly (those come from the structure-factor phase
+  sum, not the factor's shape), but it exaggerates the intensity contrast between
+  species relative to real electron scattering factors, most visibly the rock
+  salt strong/weak alternation. The direct beam is likewise capped at the
+  brightest diffracted spot rather than dominating as it would on an instrument;
+  it is masked before classification, so this does not affect the results.
 - Only six structure types down principal low-index zone axes are considered.
   Multi-phase or textured samples, arbitrary orientations, and convergent-beam
   patterns are out of scope.

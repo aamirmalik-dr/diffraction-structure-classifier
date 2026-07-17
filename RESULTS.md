@@ -62,7 +62,8 @@ mimic weak or undetected reflections.
 
 The pattern CNN's margin is largest in the middle, where enough geometry survives
 to be informative but the radial profile alone is ambiguous. With very few spots
-(0.30) all methods struggle; with a full spot list they converge.
+(0.30) all methods struggle; with a full spot list they converge. Curve:
+`figures/reflection_sweep.png`.
 
 ## 4. Accuracy versus orientation spread - configs/orientation_sweep.yaml
 
@@ -79,7 +80,8 @@ off-zone tilt in degrees.
 | 12 | 0.446 | 0.500 | **0.562** |
 
 All methods degrade as the crystal tilts off the zone axis and reflections dim
-asymmetrically; the pattern CNN degrades most gently.
+asymmetrically; the pattern CNN degrades most gently. Curve:
+`figures/orientation_sweep.png`.
 
 ## 5. Is the gap real? Fair-tuning the classical baseline
 
@@ -136,6 +138,7 @@ cue.
 
 The effect is clearest at low dose, where fixing the camera-length scale costs the
 most: domain randomisation is doing robustness work, not papering over a shortcut.
+Chart: `figures/ablation.png`.
 
 ## 8. Per-class performance and confusions
 
@@ -158,4 +161,5 @@ CNN earns its keep: its recall of 0.65 far exceeds the radial CNN's and the
 classical baseline's 0.38, because rock salt differs from simple cubic mainly in
 the angular arrangement and relative intensity of its spots, exactly the
 information the azimuthal average throws away and the polar-Fourier map keeps. The
-full confusion matrix is `figures/confusion_matrix.png`.
+full confusion matrix is `figures/confusion_matrix.png`; the per-class recall bars
+are `figures/per_class_recall.png`.

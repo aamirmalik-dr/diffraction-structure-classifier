@@ -2,10 +2,11 @@
 
 Two learned models mirror the two representations the classical baseline uses:
 
-* :class:`RadialCNN` is a 1D convolutional network over the radial profile,
-  directly comparable to the classical model on the same rotation-invariant
-  signal. It isolates the question "does a convnet help over a random forest on
-  the same 1D input?"
+* :class:`RadialCNN` is a 1D convolutional network over the radial profile. It
+  isolates the question "does a convnet help over a random forest on essentially
+  the same 1D, rotation-invariant signal?" (The classical baseline is handed a
+  little more: its radial features are also scale-normalised to ring ratios,
+  which the radial CNN is not, so the comparison mildly favours the baseline.)
 * :class:`PatternCNN` is a small 2D convolutional network over the polar-Fourier
   map (see :func:`polar_fourier`), which is invariant to the always-present
   in-plane rotation yet keeps the angular symmetry order that azimuthal averaging
