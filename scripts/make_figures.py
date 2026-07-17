@@ -9,9 +9,9 @@ Run after the benchmarks have been executed:
     for c in configs/*.yaml; do crystalclass benchmark $c; done
     python scripts/make_figures.py
 
-It reads ``results/*.json`` and writes the sweep curves, the confusion-matrix
-hero, the per-class recall bars, and the ablation chart. The labelled pattern
-gallery is regenerated directly from the simulator.
+It reads ``results/*.json`` and writes the sweep curves, the confusion matrix,
+the per-class recall bars, and the ablation chart. The labelled pattern gallery
+is regenerated directly from the simulator.
 """
 
 from __future__ import annotations
@@ -44,15 +44,12 @@ def _load(name: str) -> dict:
 
 
 def gallery() -> None:
-    specs = [
-        ("fcc", 120.0, 0),
-        ("bcc", 120.0, 1),
-        ("diamond", 120.0, 2),
-        ("rocksalt", 120.0, 3),
-        ("hcp", 120.0, 4),
-        ("sc", 120.0, 5),
+    # Clean textbook reference patterns: high dose, aligned on the zone axis.
+    specs = [("fcc", 0), ("bcc", 1), ("diamond", 2), ("rocksalt", 3), ("hcp", 4), ("sc", 5)]
+    patterns = [
+        simulate(SimConfig(structure=s, dose=300.0, orientation_spread=0.0), np.random.default_rng(seed))
+        for s, seed in specs
     ]
-    patterns = [simulate(SimConfig(structure=s, dose=d), np.random.default_rng(seed)) for s, d, seed in specs]
     plot_pattern_gallery(patterns, FIGURES / "pattern_gallery.png", title="Simulated zone-axis patterns")
 
 
@@ -99,28 +96,12 @@ def ablation() -> None:
     plt.close(fig)
 
 
-def hero() -> None:
-    """Compose the confusion matrix and the gallery into one hero image."""
-    conf = FIGURES / "confusion_matrix.png"
-    gal = FIGURES / "pattern_gallery.png"
-    if not (conf.exists() and gal.exists()):
-        return
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8))
-    for ax, img, title in zip(axes, [gal, conf], ["", ""]):
-        ax.imshow(plt.imread(img))
-        ax.axis("off")
-    fig.tight_layout()
-    fig.savefig(FIGURES / "hero.png", dpi=130)
-    plt.close(fig)
-
-
 def main() -> None:
     FIGURES.mkdir(exist_ok=True)
     gallery()
     sweeps()
     confusion_and_per_class()
     ablation()
-    hero()
     print("figures written to", FIGURES)
 
 
