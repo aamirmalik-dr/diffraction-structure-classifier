@@ -17,11 +17,26 @@ Conventions
 Real-space lattice vectors are the columns of ``A`` in angstroms. The
 crystallographic reciprocal basis (no 2 pi factor) is ``B = inv(A).T`` so that
 ``b_i . a_j = delta_ij`` and ``|g_hkl| = 1 / d_hkl``. The scattering variable
-is ``s = |g| / 2 = sin(theta) / lambda``. The electron atomic scattering factor
-uses a single-Gaussian screened form ``f(s) = Z * exp(-B_dw * s^2)``: monotone
-in ``s``, increasing in atomic number ``Z``, and, crucially, its exact
-functional shape does not affect which reflections are extinct, since absences
-come from the complex phase sum alone.
+is ``s = |g| / 2 = sin(theta) / lambda``.
+
+Scattering factor, and what it does and does not model
+-----------------------------------------------------
+The electron atomic scattering factor uses a single-Gaussian form
+``f(s) = Z * exp(-B_dw * s^2)``: monotone in ``s`` and increasing in ``Z``. Its
+exact functional shape does not affect which reflections are **extinct**, since
+absences come from the complex phase sum alone (this is what the tests pin down).
+It does, however, set every **relative intensity**, and it is a crude model:
+
+* Real electron scattering factors follow Mott-Bethe,
+  ``f_e ~ (Z - f_x(s)) / s^2``, so at low ``s`` they are dominated by the
+  valence/outer charge distribution and are **not monotone in Z**. A Z-linear
+  factor is therefore a poor model of exactly the species contrast that makes
+  rock salt's all-odd reflections weak. A tabulated parameterisation (Peng,
+  Doyle-Turner) is the correct fix and is not implemented here.
+* Consequently the strong/weak alternation of rock salt, and any comparison of
+  intensities between different species, should be read as qualitative only.
+
+``B_DW`` below is a single lumped envelope, not a measured Debye-Waller factor.
 """
 
 from __future__ import annotations
@@ -30,8 +45,18 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-# Debye-Waller-like envelope for the atomic scattering factor, in angstrom^2.
-# Sets how fast spot intensity falls with scattering angle. Physical, not tuned.
+# Lumped intensity envelope for the atomic scattering factor, in angstrom^2.
+# It stands in for BOTH the Debye-Waller factor and the s-dependence of f_e(s),
+# which are different physics at different scales, so it is phenomenological
+# rather than measured: as a Debye-Waller B it is high (representative
+# room-temperature values are ~0.2-1.0 A^2), and as a stand-in for f_e(s) it
+# decays far too slowly (real f_e roughly halves by s ~ 0.2-0.3 A^-1, whereas
+# exp(-3.0 s^2) is still 0.76 at s = 0.3 A^-1). It is set to give a sensible
+# number of visible rings.
+#
+# It is also load-bearing: because it is the only |g|-dependent term, it makes
+# the ring-to-ring intensity fall-off a readout of the absolute lattice
+# parameter. configs/scale_cue.yaml measures what that is worth.
 B_DW = 3.0
 
 
