@@ -1,7 +1,14 @@
 # One held-out test set at moderate conditions: full confusion matrices,
-# per-class scores, and the classical default-vs-tuned fair-tuning check.
+# per-class scores, 95% confidence intervals, paired McNemar tests between every
+# method pair, and the classical fair-tuning check (tuned vs default RF, plus a
+# tuned RBF-SVM as a second classical estimator on the same features).
+#
+# n_per_class is 300 (1800 patterns) because the headline comparison is decided
+# here and test patterns are simulated, hence free. At n=360 the
+# pattern-vs-radial difference does not reach significance (p = 0.053), which
+# would leave this repository's own headline claim unresolved.
 mode: compare
-n_per_class: 60
+n_per_class: 300
 seed: 200
 test_overrides: {dose: 40.0, orientation_spread: 3.0, keep_fraction: 0.85}
 classical_default_check: true

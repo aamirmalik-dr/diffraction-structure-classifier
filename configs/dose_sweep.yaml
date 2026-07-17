@@ -2,7 +2,7 @@
 mode: sweep
 axis: dose
 values: [8, 15, 30, 60, 120, 300]
-n_per_class: 40
+n_per_class: 100
 seed: 100
 methods:
   - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}

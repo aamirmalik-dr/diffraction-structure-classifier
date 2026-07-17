@@ -91,6 +91,12 @@ def plot_sweep(sweep: dict, methods: list[str], path: str | Path, metric: str = 
     for i, name in enumerate(methods):
         ys = [r[name][metric] for r in rows]
         ax.plot(values, ys, "-o", color=_color(name, i), label=name, linewidth=2, markersize=5)
+        # Show the sampling uncertainty rather than inviting the reader to
+        # over-read every wiggle in a point estimate.
+        if metric == "accuracy" and "accuracy_ci95" in rows[0][name]:
+            lo = [r[name]["accuracy_ci95"][0] for r in rows]
+            hi = [r[name]["accuracy_ci95"][1] for r in rows]
+            ax.fill_between(values, lo, hi, color=_color(name, i), alpha=0.15, linewidth=0)
     if axis == "dose":
         ax.set_xscale("log")
     ax.axhline(1.0 / len(LABELS), color="#999999", ls="--", lw=1, label="chance")
@@ -99,6 +105,58 @@ def plot_sweep(sweep: dict, methods: list[str], path: str | Path, metric: str = 
     ax.set_ylim(0, 1.02)
     ax.grid(alpha=0.3)
     ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
+def plot_scale_cue(result: dict, methods: list[str], path: str | Path, title: str = "") -> None:
+    """Save the scale-cue control: accuracy with and without the lattice cue.
+
+    Paired bars per method, with 95% Wilson intervals, showing how much accuracy
+    survives once the lattice parameter is decorrelated from the class.
+    """
+    x = np.arange(len(methods))
+    std = [result["methods"][m]["standard"]["accuracy"] for m in methods]
+    dec = [result["methods"][m]["decorrelated"]["accuracy"] for m in methods]
+
+    def err(key):
+        out = [[], []]
+        for m in methods:
+            a = result["methods"][m][key]["accuracy"]
+            lo, hi = result["methods"][m][key]["accuracy_ci95"]
+            out[0].append(a - lo)
+            out[1].append(hi - a)
+        return np.array(out)
+
+    fig, ax = plt.subplots(figsize=(6.6, 4.2))
+    ax.bar(
+        x - 0.2,
+        std,
+        width=0.4,
+        yerr=err("standard"),
+        capsize=3,
+        color="#4c72b0",
+        label="preset lattice parameter (published setting)",
+    )
+    ax.bar(
+        x + 0.2,
+        dec,
+        width=0.4,
+        yerr=err("decorrelated"),
+        capsize=3,
+        color="#c44e52",
+        label="lattice parameter decorrelated from class",
+    )
+    ax.axhline(1.0 / len(LABELS), color="#999999", ls="--", lw=1, label="chance")
+    ax.set_xticks(x)
+    ax.set_xticklabels(methods, rotation=15, ha="right")
+    ax.set_ylabel("accuracy")
+    ax.set_ylim(0, 1.02)
+    ax.grid(alpha=0.3, axis="y")
+    ax.legend(fontsize=8, loc="upper right")
+    if title:
+        ax.set_title(title, fontsize=10)
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
