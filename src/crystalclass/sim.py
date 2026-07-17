@@ -11,9 +11,10 @@ Design choices that keep the classification honest:
   be a cue.
 * **Absolute scale is randomised** per pattern (the ``scale_frac`` camera-length
   jitter), so the pattern's overall size in pixels does not encode the class.
-* **Ring count is scale-normalised**: reflections are kept out to a multiple of
-  the first allowed reflection ``g1``, so a larger lattice parameter does not
-  leak more spots into the frame.
+* **Ring positions are scale-normalised**: reflections are kept out to a multiple
+  of the first allowed reflection ``g1``, so the rings land on the same pixel
+  radii whatever the lattice parameter. Note this holds for ring *geometry* only,
+  not for ring *brightness*: see the scale cue below.
 * **Background is randomised** per pattern, so a constant background cannot be a
   cue.
 
@@ -21,6 +22,25 @@ What remains, and what the classifier must use, is the true physics: the ratios
 of ring radii, the angular arrangement of spots, and the systematic absences
 and weak reflections that separate simple cubic, BCC, FCC, diamond, rock salt,
 and HCP.
+
+One cue this does **not** remove, and which is measured rather than assumed: each
+structure carries a preset lattice parameter, and the scattering envelope
+``exp(-B_dw s^2)`` makes the ring-to-ring intensity fall-off a readout of the
+absolute ``|g|``, hence of ``a``. Randomising the camera length removes the
+*pixel-scale* cue but not this *intensity-decay* one. Passing an explicit ``a``
+(as :func:`crystalclass.datasets.make_scale_cue_dataset` does) is how the
+benchmark severs the correlation and measures what it is worth. See
+``configs/scale_cue.yaml`` and RESULTS.md.
+
+Simplifications a microscopist should know about, stated plainly:
+
+* There is no electron wavelength in this model, so the Ewald sphere is flat.
+  Real zero-order-Laue-zone reflections have ``s_g ~ -lambda |g|^2 / 2`` even at
+  perfect zone-axis alignment, which is why high-``|g|`` reflections dim and why
+  the Laue circle exists. Here ``s_g`` is zero for every reflection at zero tilt,
+  and the only ``|g|``-dependent dimming is the scattering envelope. No
+  accelerating voltage is modelled, and there are no higher-order Laue zones.
+* Scattering is kinematical (single). No dynamical redistribution of intensity.
 """
 
 from __future__ import annotations
@@ -33,7 +53,9 @@ from crystalclass.structures import STRUCTURE_NAMES, Structure, get_structure, z
 
 # Excitation-error width (inverse angstroms). Off-zone tilt damps a reflection
 # by exp(-(s_g / EXC_WIDTH)^2) where s_g is its excitation error. First-order
-# model: s_g = |g| sin(tilt) cos(phi_g - phi_tilt), exact only for small tilt.
+# model: s_g = |g| sin(tilt) cos(phi_g - phi_tilt), where phi_tilt is the azimuth
+# the crystal tilts *towards*. Exact only for small tilt, and it omits the
+# Ewald-curvature term -lambda |g|^2 / 2 entirely (see the module docstring).
 EXC_WIDTH = 0.06
 
 
@@ -52,14 +74,27 @@ class SimConfig:
         zone_axis: Beam direction, or ``None`` to draw from the structure's
             low-index zone axes.
         dose: Counts at the brightest diffracted spot; lower means noisier.
-        orientation_spread: Standard deviation of the off-zone tilt, in degrees.
-        keep_fraction: Fraction of allowed spots retained (missing reflections).
+        orientation_spread: Scale parameter (in degrees) of the off-zone tilt.
+            The tilt is drawn as ``abs(Normal(0, orientation_spread))``, so this
+            is the sigma of the underlying normal *before* the absolute value,
+            not the standard deviation of the realised tilt. The resulting
+            half-normal has mean ``0.80 * orientation_spread`` and standard
+            deviation ``0.60 * orientation_spread``.
+        keep_fraction: Fraction of allowed spots retained. Spots are dropped
+            **independently of their intensity**, so this models unpredictable
+            spot loss (detector gaps, beam stop, aperture) and acts as a
+            robustness augmentation. It is deliberately *not* a detection
+            threshold: a real detection limit loses the weakest reflections
+            first, which this does not do.
         ring_span: Reflections kept out to ``ring_span * g1``; controls how many
             rings are visible independent of lattice parameter.
         spot_sigma: Spot radius in pixels.
         background_level: Constant background pedestal (intensity units).
         diffuse_level: Amplitude of the smooth central diffuse background.
-        readout_sigma: Gaussian readout noise as a fraction of the dose.
+        readout_counts: Gaussian readout noise in absolute counts, independent
+            of dose, as a detector's readout floor actually behaves. It
+            therefore dominates only at low dose, where Poisson counting noise
+            is small.
         scale_frac: Fraction of the half-frame that ``ring_span * g1`` maps to;
             the camera-length jitter. ``None`` draws it per pattern.
         blank_spots: If True, skip rendering the diffracted spots and keep only
@@ -78,7 +113,7 @@ class SimConfig:
     spot_sigma: float = 1.6
     background_level: float | None = None
     diffuse_level: float | None = None
-    readout_sigma: float = 0.01
+    readout_counts: float = 1.0
     scale_frac: float | None = None
     blank_spots: bool = False
 
@@ -240,10 +275,12 @@ def simulate(config: SimConfig, rng: np.random.Generator) -> Pattern:
     r = np.sqrt((xx - center) ** 2 + (yy - center) ** 2)
     clean = clean + ped + diff_amp * np.exp(-r / (size / 6.0))
 
-    # Poisson photon noise scaled by dose, plus Gaussian readout.
+    # Poisson photon noise scaled by dose, plus a dose-independent Gaussian
+    # readout floor in absolute counts (a detector property, not an exposure
+    # property), so readout matters most where the signal is weakest.
     photons = np.clip(clean * config.dose, 0, None)
     noisy = rng.poisson(photons).astype(np.float32)
-    noisy += rng.normal(0.0, config.readout_sigma * config.dose, size=noisy.shape).astype(np.float32)
+    noisy += rng.normal(0.0, config.readout_counts, size=noisy.shape).astype(np.float32)
     noisy = np.clip(noisy, 0, None)
 
     profile = _radial_profile(noisy)
