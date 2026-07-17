@@ -45,6 +45,7 @@ def aggregate_metrics() -> None:
     dose = load("dose_sweep")
     leakage = load("leakage")
     ablation = load("ablation")
+    scale_cue = load("scale_cue")
 
     methods = ["classical_rf", "radial_cnn", "pattern_cnn"]
     dose_curve = {m: {str(r["value"]): round(r[m]["accuracy"], 4) for r in dose["rows"]} for m in methods}
@@ -55,7 +56,24 @@ def aggregate_metrics() -> None:
         "compare_conditions": compare["test_overrides"],
         "compare_accuracy": {m: round(compare["methods"][m]["accuracy"], 4) for m in methods},
         "compare_macro_f1": {m: round(compare["methods"][m]["macro_f1"], 4) for m in methods},
+        "n_test_compare": compare["n_test"],
+        "compare_accuracy_ci95": {
+            m: [round(v, 4) for v in compare["methods"][m]["accuracy_ci95"]] for m in methods
+        },
+        "compare_pairwise_tests": compare["pairwise_tests"],
         "classical_tuning": compare.get("classical_tuning", {}),
+        "scale_cue": {
+            "a_range": scale_cue["a_range"],
+            "n_test": scale_cue["n_test"],
+            "accuracy_standard": {
+                m: round(scale_cue["methods"][m]["standard"]["accuracy"], 4) for m in methods
+            },
+            "accuracy_decorrelated": {
+                m: round(scale_cue["methods"][m]["decorrelated"]["accuracy"], 4) for m in methods
+            },
+            "accuracy_drop": {m: round(scale_cue["methods"][m]["accuracy_drop"], 4) for m in methods},
+            "pairwise_tests_decorrelated": scale_cue["pairwise_tests_decorrelated"],
+        },
         "dose_accuracy": dose_curve,
         "leakage": {
             "chance_level": leakage["chance_level"],
@@ -63,7 +81,10 @@ def aggregate_metrics() -> None:
             "trained_on_blank_accuracy": round(leakage["trained_on_blank_accuracy"], 4),
             "shuffled_label_accuracy": round(leakage["shuffled_label_accuracy"], 4),
         },
-        "ablation": {v: {k: round(x, 4) for k, x in d.items()} for v, d in ablation["variants"].items()},
+        "ablation": {
+            v: {k: (round(x, 4) if isinstance(x, (int, float)) else x) for k, x in d.items()}
+            for v, d in ablation["variants"].items()
+        },
     }
     (RESULTS / "metrics.json").write_text(json.dumps(metrics, indent=2))
     print("   wrote results/metrics.json")
@@ -75,7 +96,15 @@ def main() -> None:
     _run(["train", "--model", "classical"])
     _run(["train", "--model", "radial"])
     _run(["train", "--model", "pattern"])
-    for name in ["dose_sweep", "reflection_sweep", "orientation_sweep", "compare", "leakage", "ablation"]:
+    for name in [
+        "dose_sweep",
+        "reflection_sweep",
+        "orientation_sweep",
+        "compare",
+        "scale_cue",
+        "leakage",
+        "ablation",
+    ]:
         _benchmark(name)
     aggregate_metrics()
     subprocess.run([sys.executable, str(ROOT / "scripts" / "make_figures.py")], check=True)

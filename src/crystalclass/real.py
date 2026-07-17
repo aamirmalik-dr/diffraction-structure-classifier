@@ -55,9 +55,9 @@ def classify_image(
     """Return the predicted class index and softmax probabilities for an image."""
     import torch
 
-    from crystalclass.net import standardize_image
+    from crystalclass.net import preprocess_image
 
-    x = standardize_image(image)[None, None, :, :].astype(np.float32)
+    x = preprocess_image(image)[None, None, :, :].astype(np.float32)
     with torch.no_grad():
         logits = model(torch.from_numpy(x))
         probs = torch.softmax(logits, dim=1).numpy()[0]

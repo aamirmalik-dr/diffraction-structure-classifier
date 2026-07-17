@@ -25,13 +25,15 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from crystalclass.cli import SAMPLES, sample_config
 from crystalclass.plots import (
     plot_confusion_matrix,
     plot_pattern_gallery,
     plot_per_class_bars,
+    plot_scale_cue,
     plot_sweep,
 )
-from crystalclass.sim import SimConfig, simulate
+from crystalclass.sim import simulate
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -44,13 +46,19 @@ def _load(name: str) -> dict:
 
 
 def gallery() -> None:
-    # Clean textbook reference patterns: high dose, aligned on the zone axis.
-    specs = [("fcc", 0), ("bcc", 1), ("diamond", 2), ("rocksalt", 3), ("hcp", 4), ("sc", 5)]
+    """Clean textbook reference patterns: high dose, aligned on the zone axis.
+
+    Uses the same spec as ``crystalclass samples`` / ``crystalclass gallery`` so
+    the committed samples and this figure can never drift apart.
+    """
     patterns = [
-        simulate(SimConfig(structure=s, dose=300.0, orientation_spread=0.0), np.random.default_rng(seed))
-        for s, seed in specs
+        simulate(sample_config(structure), np.random.default_rng(seed)) for _, structure, seed in SAMPLES
     ]
-    plot_pattern_gallery(patterns, FIGURES / "pattern_gallery.png", title="Simulated zone-axis patterns")
+    plot_pattern_gallery(
+        patterns,
+        FIGURES / "pattern_gallery.png",
+        title="Simulated zone-axis diffraction, one per structure",
+    )
 
 
 def sweeps() -> None:
@@ -74,6 +82,18 @@ def confusion_and_per_class() -> None:
     plot_per_class_bars(pat, FIGURES / "per_class_recall.png", title="pattern CNN per-class recall")
 
 
+def scale_cue() -> None:
+    if not (RESULTS / "scale_cue.json").exists():
+        return
+    data = _load("scale_cue.json")
+    plot_scale_cue(
+        data,
+        METHODS,
+        FIGURES / "scale_cue.png",
+        title="How much accuracy is the lattice parameter, not the structure type?",
+    )
+
+
 def ablation() -> None:
     if not (RESULTS / "ablation.json").exists():
         return
@@ -81,16 +101,19 @@ def ablation() -> None:
     variants = list(data)
     ref = [data[v]["test_accuracy"] for v in variants]
     low = [data[v]["low_dose_accuracy"] for v in variants]
+    ref_err = [data[v].get("test_accuracy_std", 0.0) for v in variants]
+    low_err = [data[v].get("low_dose_accuracy_std", 0.0) for v in variants]
+    n_seeds = data[variants[0]].get("n_seeds", 1)
     x = np.arange(len(variants))
     fig, ax = plt.subplots(figsize=(6.2, 4.0))
-    ax.bar(x - 0.2, ref, width=0.4, label="reference dose", color="#4c72b0")
-    ax.bar(x + 0.2, low, width=0.4, label="dose 20", color="#c44e52")
+    ax.bar(x - 0.2, ref, width=0.4, yerr=ref_err, capsize=3, label="reference dose", color="#4c72b0")
+    ax.bar(x + 0.2, low, width=0.4, yerr=low_err, capsize=3, label="dose 20", color="#c44e52")
     ax.set_xticks(x)
     ax.set_xticklabels(variants, rotation=20, ha="right")
     ax.set_ylabel("pattern CNN accuracy")
     ax.set_ylim(0, 1.02)
     ax.legend(fontsize=8)
-    ax.set_title("Domain-randomisation ablation")
+    ax.set_title(f"Domain-randomisation ablation (mean over {n_seeds} seeds)")
     fig.tight_layout()
     fig.savefig(FIGURES / "ablation.png", dpi=130)
     plt.close(fig)
@@ -101,6 +124,7 @@ def main() -> None:
     gallery()
     sweeps()
     confusion_and_per_class()
+    scale_cue()
     ablation()
     print("figures written to", FIGURES)
 

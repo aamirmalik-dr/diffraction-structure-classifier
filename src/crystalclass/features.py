@@ -30,28 +30,6 @@ U_MAX = 5.0  # resample the profile out to r / r1 = U_MAX
 FEATURE_DIM = N_PROFILE + 2 * N_RINGS + 4
 
 
-def first_ring_radius(profile: np.ndarray, fallback: float | None = None) -> float:
-    """Estimate the radius of the first diffraction ring, in pixels.
-
-    Used to index a pattern to a scale-free radial axis. Falls back to a fixed
-    fraction of the frame when no ring is detected (e.g. a blanked pattern),
-    which keeps downstream code well behaved rather than dividing by zero.
-
-    Args:
-        profile: A radial profile (azimuthal average).
-        fallback: Radius to return when no ring is found; defaults to 18% of the
-            profile length times two (an inner-ring-scale guess).
-
-    Returns:
-        The first-ring radius in pixels.
-    """
-    r_min = max(3, int(0.05 * 2 * profile.size))
-    radii, _ = _find_rings(profile, r_min)
-    if radii.size:
-        return float(radii[0])
-    return fallback if fallback is not None else 0.18 * 2 * profile.size
-
-
 def _find_rings(profile: np.ndarray, r_min: int) -> tuple[np.ndarray, np.ndarray]:
     """Detect ring peaks in a radial profile beyond the central beam.
 
