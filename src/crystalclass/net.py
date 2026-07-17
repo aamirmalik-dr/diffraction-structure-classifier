@@ -81,11 +81,6 @@ def preprocess_profile(profile: np.ndarray) -> np.ndarray:
     return ((profile - profile.mean()) / (profile.std() + 1e-6)).astype(np.float32)
 
 
-# Backwards-compatible aliases used elsewhere in the package.
-standardize_image = preprocess_image
-standardize_profile = preprocess_profile
-
-
 class RadialCNN(nn.Module):
     """1D CNN over the radial profile with a spatial-preserving head."""
 
@@ -186,3 +181,16 @@ def predict_pattern(model: PatternCNN, images: np.ndarray, batch: int = 128) -> 
             logits = model(torch.from_numpy(x.astype(np.float32)))
             out.append(logits.argmax(1).numpy())
     return np.concatenate(out) if out else np.empty(0, dtype=int)
+
+
+def predict_pattern_proba(model: PatternCNN, images: np.ndarray, batch: int = 128) -> np.ndarray:
+    """Return softmax class probabilities for a stack of patterns, shape ``(n, C)``."""
+    model.eval()
+    out = []
+    with torch.no_grad():
+        for i in range(0, len(images), batch):
+            chunk = images[i : i + batch]
+            x = np.stack([preprocess_image(im) for im in chunk])[:, None, :, :]
+            logits = model(torch.from_numpy(x.astype(np.float32)))
+            out.append(torch.softmax(logits, dim=1).numpy())
+    return np.concatenate(out) if out else np.empty((0, N_CLASSES))

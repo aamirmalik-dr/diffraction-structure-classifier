@@ -17,8 +17,8 @@ from crystalclass.datasets import Dataset, make_training_dataset
 from crystalclass.net import (
     PatternCNN,
     RadialCNN,
-    standardize_image,
-    standardize_profile,
+    preprocess_image,
+    preprocess_profile,
 )
 
 
@@ -49,8 +49,8 @@ class TrainSettings:
     randomize_background: bool = True
 
 
-def _standardize_batch(arr: np.ndarray, is_image: bool) -> np.ndarray:
-    fn = standardize_image if is_image else standardize_profile
+def _preprocess_batch(arr: np.ndarray, is_image: bool) -> np.ndarray:
+    fn = preprocess_image if is_image else preprocess_profile
     stacked = np.stack([fn(a) for a in arr])
     if is_image:
         return stacked[:, None, :, :].astype(np.float32)
@@ -85,7 +85,7 @@ def train_model(
             randomize_background=settings.randomize_background,
         )
 
-    x = _standardize_batch(pool.images if is_image else pool.profiles, is_image)
+    x = _preprocess_batch(pool.images if is_image else pool.profiles, is_image)
     y = pool.labels.astype(np.int64)
     x_t = torch.from_numpy(x)
     y_t = torch.from_numpy(y)

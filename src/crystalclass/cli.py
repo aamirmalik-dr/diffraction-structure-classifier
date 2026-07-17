@@ -53,7 +53,13 @@ SAMPLES = (
 )
 
 
-def _sample_config(structure: str) -> SimConfig:
+def sample_config(structure: str) -> SimConfig:
+    """Return the SimConfig for a committed reference sample of ``structure``.
+
+    Public because ``scripts/make_figures.py`` draws the gallery from the same
+    spec as ``crystalclass samples``, so the figure and the committed .npz files
+    cannot drift apart.
+    """
     return SimConfig(structure=structure, dose=SAMPLE_DOSE, orientation_spread=SAMPLE_ORIENTATION)
 
 
@@ -122,7 +128,7 @@ def _cmd_train(args: argparse.Namespace) -> None:
 
         pool = make_training_dataset(args.pool, seed=args.seed)
         model = train_classical(pool.images, pool.labels, kind=args.kind, default=False)
-        joblib.dump(model, out, compress=3)
+        joblib.dump(model, out, compress=9)
         print(f"trained classical {args.kind}: cv={model.cv_score:.4f}  params={model.best_params}")
         print(f"wrote {out}")
         return
@@ -147,7 +153,7 @@ def _cmd_benchmark(args: argparse.Namespace) -> None:
 
 def _cmd_samples(args: argparse.Namespace) -> None:
     for name, structure, seed in SAMPLES:
-        pattern = simulate(_sample_config(structure), np.random.default_rng(seed))
+        pattern = simulate(sample_config(structure), np.random.default_rng(seed))
         path = Path("data/sample") / f"{name}.npz"
         save_pattern(path, pattern)
         print(f"wrote {path}  ({pattern.label}, {pattern.meta['n_spots']} spots)")
@@ -155,7 +161,7 @@ def _cmd_samples(args: argparse.Namespace) -> None:
 
 def _cmd_gallery(args: argparse.Namespace) -> None:
     patterns = [
-        simulate(_sample_config(structure), np.random.default_rng(seed)) for _, structure, seed in SAMPLES
+        simulate(sample_config(structure), np.random.default_rng(seed)) for _, structure, seed in SAMPLES
     ]
     out = args.out or "figures/pattern_gallery.png"
     plot_pattern_gallery(patterns, out, title="Simulated zone-axis diffraction, one per structure")
@@ -163,17 +169,26 @@ def _cmd_gallery(args: argparse.Namespace) -> None:
 
 
 def _cmd_demo(args: argparse.Namespace) -> None:
+    from crystalclass.net import predict_pattern_proba
     from crystalclass.train import load_pattern_model
 
     model = load_pattern_model(args.model or DEFAULT_MODELS["pattern"])
     correct = 0
     for name, structure, seed in SAMPLES:
         pattern = load_pattern(Path("data/sample") / f"{name}.npz")
-        pred = LABELS[int(predict_pattern(model, pattern.image[None])[0])]
+        probs = predict_pattern_proba(model, pattern.image[None])[0]
+        pred = LABELS[int(probs.argmax())]
         ok = pred == pattern.label
         correct += ok
-        print(f"{name:16s} true={pattern.label:9s} pred={pred:9s} {'OK' if ok else 'X'}")
-    print(f"{correct}/{len(SAMPLES)} correct")
+        p_pred = probs.max()
+        p_true = probs[LABELS.index(pattern.label)]
+        print(
+            f"{name:16s} true={pattern.label:9s} pred={pred:9s} "
+            f"p(pred)={p_pred:.2f} p(true)={p_true:.2f} {'OK' if ok else 'X'}"
+        )
+    print(f"{correct}/{len(SAMPLES)} correct on six single high-dose reference patterns")
+    print("(the two hardest confusions, rock salt and simple cubic, are geometrically")
+    print(" identical down [001]; see RESULTS.md section 9)")
 
 
 def build_parser() -> argparse.ArgumentParser:

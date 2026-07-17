@@ -94,9 +94,9 @@ CELLS: list[tuple[str, str]] = [
     (
         "code",
         "from crystalclass.datasets import make_training_dataset, make_dataset\n"
-        "from crystalclass.benchmark import _test_config\n"
+        "from crystalclass.benchmark import reference_config\n"
         "train = make_training_dataset(1200, seed=0)\n"
-        "test = make_dataset(len(LABELS) * 40, seed=99, base=_test_config({'dose': 40.0, 'orientation_spread': 3.0}))\n"
+        "test = make_dataset(len(LABELS) * 40, seed=99, base=reference_config({'dose': 40.0, 'orientation_spread': 3.0}))\n"
         "print('train', train.images.shape, 'test', test.images.shape)",
     ),
     (
@@ -145,7 +145,7 @@ CELLS: list[tuple[str, str]] = [
         "doses = [8, 15, 30, 60, 120, 300]\n"
         "curves = {k: [] for k in acc}\n"
         "for d in doses:\n"
-        "    ds = make_dataset(len(LABELS) * 30, seed=200 + d, base=_test_config({'dose': float(d)}))\n"
+        "    ds = make_dataset(len(LABELS) * 30, seed=200 + d, base=reference_config({'dose': float(d)}))\n"
         "    curves['classical_rf'].append(accuracy(ds.labels, rf.predict(ds.images)))\n"
         "    curves['radial_cnn'].append(accuracy(ds.labels, predict_radial(radial, ds.profiles)))\n"
         "    curves['pattern_cnn'].append(accuracy(ds.labels, predict_pattern(pattern, ds.images)))\n"
