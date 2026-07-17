@@ -74,7 +74,7 @@ reports.
 from crystalclass.train import TrainSettings, train_model
 from crystalclass.net import predict_pattern, predict_radial
 
-model, history = train_model(TrainSettings(model="pattern", pool_size=3000, epochs=12))
+model, history = train_model(TrainSettings(model="pattern"))  # defaults match the committed weights
 preds = predict_pattern(model, test.images)
 
 radial, _ = train_model(TrainSettings(model="radial"))

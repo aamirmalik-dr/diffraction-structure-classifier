@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
@@ -82,9 +83,10 @@ def train_classical(
     feats = extract_features_batch(images)
     pipeline, grid = _GRIDS[kind]
     if default:
-        pipeline.fit(feats, labels)
-        return ClassicalModel(kind=kind, estimator=pipeline, best_params={}, cv_score=float("nan"))
-    search = GridSearchCV(pipeline, grid, cv=cv, n_jobs=-1, scoring="accuracy")
+        # Clone so the shared module-level template is never fitted in place.
+        estimator = clone(pipeline).fit(feats, labels)
+        return ClassicalModel(kind=kind, estimator=estimator, best_params={}, cv_score=float("nan"))
+    search = GridSearchCV(clone(pipeline), grid, cv=cv, n_jobs=-1, scoring="accuracy")
     search.fit(feats, labels)
     return ClassicalModel(
         kind=kind,

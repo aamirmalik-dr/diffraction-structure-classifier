@@ -40,7 +40,7 @@ class TrainSettings:
 
     model: str = "pattern"
     pool_size: int = 3000
-    epochs: int = 12
+    epochs: int = 18  # matches the CLI default and the committed weights
     batch: int = 32
     lr: float = 1e-3
     seed: int = 0
@@ -136,7 +136,7 @@ def save_model(model: nn.Module, path: str) -> None:
 def load_pattern_model(path: str) -> PatternCNN:
     """Load a :class:`PatternCNN` from ``path``."""
     model = PatternCNN()
-    model.load_state_dict(torch.load(path, map_location="cpu"))
+    model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
     model.eval()
     return model
 
@@ -144,6 +144,6 @@ def load_pattern_model(path: str) -> PatternCNN:
 def load_radial_model(path: str, length: int) -> RadialCNN:
     """Load a :class:`RadialCNN` from ``path``."""
     model = RadialCNN(length=length)
-    model.load_state_dict(torch.load(path, map_location="cpu"))
+    model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
     model.eval()
     return model
