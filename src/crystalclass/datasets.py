@@ -68,6 +68,62 @@ def make_dataset(
     )
 
 
+def make_scale_cue_dataset(
+    n: int,
+    seed: int,
+    base: SimConfig | None = None,
+    a_range: tuple[float, float] = (2.6, 6.1),
+) -> Dataset:
+    """Build a test set with the lattice parameter decorrelated from the class.
+
+    Every structure normally carries one preset lattice parameter jittered only
+    +-8%, and those ranges do not overlap between the small-cell classes
+    (sc/bcc/fcc/hcp, 2.6-3.9 A) and the large-cell ones (diamond/rocksalt,
+    5.0-6.1 A). Randomising the camera length removes the *pixel-scale* cue, but
+    the scattering envelope ``exp(-B_dw s^2)`` still makes the ring-to-ring
+    intensity fall-off a readout of absolute ``|g|``, hence of ``a``, hence of the
+    class. Ring positions in pixels are unaffected by ``a``, so the intensity
+    envelope is the sole channel.
+
+    This builder draws ``a`` from one common range for every class, which severs
+    the correlation and leaves only structure-type geometry: ring-ratio
+    sequences, angular symmetry, and systematic absences. Comparing accuracy here
+    against the standard test set measures what the material-identity cue is
+    worth. Some of the resulting cells are not physical (a rock salt with
+    ``a = 2.7 A`` does not exist); that is intended, because this is a control
+    for isolating a cue, not a physical scenario.
+
+    Args:
+        n: Number of patterns.
+        seed: Master seed.
+        base: Template config; imaging conditions are taken from it.
+        a_range: Common ``(low, high)`` lattice-parameter range, in angstroms,
+            spanning every class's preset.
+
+    Returns:
+        A class-balanced :class:`Dataset`.
+    """
+    base = base or SimConfig()
+    rng = np.random.default_rng(seed)
+    seeds = rng.integers(0, 2**31 - 1, size=n)
+    a_draw = rng.uniform(a_range[0], a_range[1], size=n)
+
+    images, profiles, labels, meta = [], [], [], []
+    for i in range(n):
+        cfg = replace(base, structure=LABELS[i % len(LABELS)], a=float(a_draw[i]))
+        pattern = simulate(cfg, np.random.default_rng(int(seeds[i])))
+        images.append(pattern.image)
+        profiles.append(pattern.profile)
+        labels.append(pattern.label_index)
+        meta.append(pattern.meta)
+    return Dataset(
+        images=np.stack(images),
+        profiles=np.stack(profiles),
+        labels=np.array(labels),
+        meta=meta,
+    )
+
+
 def make_training_dataset(
     n: int,
     seed: int,

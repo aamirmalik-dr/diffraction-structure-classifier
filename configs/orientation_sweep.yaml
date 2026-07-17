@@ -2,7 +2,7 @@
 mode: sweep
 axis: orientation_spread
 values: [0.0, 2.0, 4.0, 6.0, 9.0, 12.0]
-n_per_class: 40
+n_per_class: 100
 seed: 160
 methods:
   - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}

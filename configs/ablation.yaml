@@ -1,8 +1,14 @@
-# Retrain the pattern CNN with one domain-randomisation component removed and
-# re-score. Confirms the network is not leaning on absolute scale or a constant
-# background as a trivial cue.
+# Retrain the pattern CNN with one domain-randomisation component removed from the
+# training pool and re-score on the standard test set. Measures the robustness
+# that domain randomisation buys (train narrow, test wide). This is not a shortcut
+# test; the shortcut tests are configs/scale_cue.yaml and configs/leakage.yaml.
+#
+# Each variant is trained over n_seeds seeds and the mean and spread are reported,
+# because a single run of this small CNN is seed-sensitive: one unlucky training
+# run can underfit and would otherwise read as "this cue is critical".
 mode: ablation
 n_per_class: 40
 seed: 400
 pool_size: 3000
 epochs: 18
+n_seeds: 3

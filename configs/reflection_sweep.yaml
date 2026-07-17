@@ -2,7 +2,7 @@
 mode: sweep
 axis: keep_fraction
 values: [0.3, 0.45, 0.6, 0.75, 0.9, 1.0]
-n_per_class: 40
+n_per_class: 100
 seed: 130
 methods:
   - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}

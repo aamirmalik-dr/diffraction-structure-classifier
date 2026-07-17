@@ -1,0 +1,23 @@
+# Shortcut control: how much of the accuracy is the class-correlated lattice
+# parameter rather than structure-type geometry?
+#
+# Each structure carries one preset lattice parameter jittered only +-8%, and the
+# small-cell classes (sc/bcc/fcc/hcp, 2.6-3.9 A) do not overlap the large-cell
+# ones (diamond/rocksalt, 5.0-6.1 A). Randomising the camera length hides cell
+# size from the pixel scale, but the scattering envelope exp(-B_dw s^2) still
+# encodes absolute |g| in the ring-to-ring intensity fall-off. This scores the
+# committed models on a matched test set whose lattice parameter is drawn from
+# one common range for every class, which severs the correlation and leaves only
+# geometry: ring ratios, angular symmetry, systematic absences.
+#
+# Some decorrelated cells are unphysical by construction. That is the point: it
+# is a control for isolating a cue, not a physical scenario.
+mode: scale_cue
+n_per_class: 300
+seed: 500
+a_range: [2.6, 6.1]
+test_overrides: {dose: 40.0, orientation_spread: 3.0, keep_fraction: 0.85}
+methods:
+  - {name: classical_rf, kind: classical, path: models/classical_rf.joblib}
+  - {name: radial_cnn,   kind: radial,    path: models/radial_cnn.pt}
+  - {name: pattern_cnn,  kind: pattern,   path: models/pattern_cnn.pt}
