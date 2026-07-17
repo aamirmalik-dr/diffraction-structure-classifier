@@ -2,10 +2,10 @@
   "mode": "leakage",
   "chance_level": 0.16666666666666666,
   "blank_spots_accuracy": {
-    "classical_rf": 0.17916666666666667,
-    "radial_cnn": 0.1375,
-    "pattern_cnn": 0.17083333333333334
+    "classical_rf": 0.1875,
+    "radial_cnn": 0.15833333333333333,
+    "pattern_cnn": 0.12083333333333333
   },
-  "trained_on_blank_accuracy": 0.14583333333333334,
-  "shuffled_label_accuracy": 0.15833333333333333
+  "trained_on_blank_accuracy": 0.1875,
+  "shuffled_label_accuracy": 0.17083333333333334
 }
