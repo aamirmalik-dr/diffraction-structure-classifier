@@ -104,21 +104,6 @@ def plot_sweep(sweep: dict, methods: list[str], path: str | Path, metric: str = 
     plt.close(fig)
 
 
-def plot_radial_profiles(patterns: list[Pattern], path: str | Path) -> None:
-    """Save the radial profiles of several patterns on one axis."""
-    fig, ax = plt.subplots(figsize=(6.0, 4.0))
-    for i, p in enumerate(patterns):
-        prof = p.profile / (p.profile.max() + 1e-9)
-        ax.plot(prof + i * 0.4, color="#4c72b0")
-        ax.text(len(prof) * 0.85, i * 0.4 + 0.15, p.label, fontsize=8)
-    ax.set_xlabel("radius (pixels)")
-    ax.set_ylabel("normalised intensity (offset)")
-    ax.set_yticks([])
-    fig.tight_layout()
-    fig.savefig(path, dpi=130)
-    plt.close(fig)
-
-
 def plot_per_class_bars(summary: dict, path: str | Path, title: str = "") -> None:
     """Save a grouped bar chart of per-class recall for one method summary."""
     per = summary["per_class"]
