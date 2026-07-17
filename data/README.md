@@ -36,7 +36,7 @@ crystalclass classify your_pattern.png --method pattern
 ```
 
 For a sensible result the image must satisfy the conditions in
-`crystalclass/real.py`:
+`src/crystalclass/real.py`:
 
 - the direct (undiffracted) beam sits at the image centre (pass a `center`
   argument to `load_diffraction_image` if it does not);

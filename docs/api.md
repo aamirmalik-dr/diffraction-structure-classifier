@@ -122,5 +122,5 @@ image = load_diffraction_image("your_pattern.png", size=128)
 index, probs = classify_image(model, image)
 ```
 
-See `crystalclass/real.py` for the requirements the input image must meet
+See `src/crystalclass/real.py` for the requirements the input image must meet
 (centred direct beam, whole pattern visible, actually a diffraction pattern).
