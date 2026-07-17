@@ -35,6 +35,18 @@ def test_classical_beats_chance():
     assert acc > 1.0 / len(LABELS)
 
 
+def test_blank_patterns_are_unclassifiable():
+    # With the diffracted spots removed (only beam + background remain), there is
+    # no physics to classify, so a fitted classifier must stay near the 1/6
+    # chance level. This guards the leakage-control claim as a unit test.
+    base = SimConfig(blank_spots=True)
+    train = make_dataset(len(LABELS) * 20, seed=0, base=base)
+    test = make_dataset(len(LABELS) * 20, seed=1, base=base)
+    model = train_classical(train.images, train.labels, kind="rf", default=True)
+    acc = accuracy(test.labels, model.predict(test.images))
+    assert acc < 0.35  # near 1/6 = 0.167, far below the real ~0.55 baseline
+
+
 def test_cnn_trains_and_beats_chance():
     settings = TrainSettings(model="radial", pool_size=180, epochs=3, seed=0)
     model, history = train_model(settings)

@@ -36,15 +36,25 @@ DEFAULT_MODELS = {
     "classical": "models/classical_rf.joblib",
 }
 
-# (name, structure, dose, seed): the committed reference samples.
+# The committed reference samples are clean textbook patterns: high dose and
+# aligned on the zone axis (no off-zone tilt), which is how a microscopist would
+# record a reference. The in-plane orientation is still random.
+SAMPLE_DOSE = 300.0
+SAMPLE_ORIENTATION = 0.0
+
+# (name, structure, seed): the committed reference samples.
 SAMPLES = (
-    ("fcc_cu", "fcc", 120.0, 0),
-    ("bcc_fe", "bcc", 120.0, 1),
-    ("diamond_si", "diamond", 120.0, 2),
-    ("rocksalt_nacl", "rocksalt", 120.0, 3),
-    ("hcp_ti", "hcp", 120.0, 4),
-    ("sc_po", "sc", 120.0, 5),
+    ("fcc_cu", "fcc", 0),
+    ("bcc_fe", "bcc", 1),
+    ("diamond_si", "diamond", 2),
+    ("rocksalt_nacl", "rocksalt", 3),
+    ("hcp_ti", "hcp", 4),
+    ("sc_po", "sc", 5),
 )
+
+
+def _sample_config(structure: str) -> SimConfig:
+    return SimConfig(structure=structure, dose=SAMPLE_DOSE, orientation_spread=SAMPLE_ORIENTATION)
 
 
 def _cmd_simulate(args: argparse.Namespace) -> None:
@@ -136,19 +146,17 @@ def _cmd_benchmark(args: argparse.Namespace) -> None:
 
 
 def _cmd_samples(args: argparse.Namespace) -> None:
-    for name, structure, dose, seed in SAMPLES:
-        cfg = SimConfig(structure=structure, dose=dose)
-        pattern = simulate(cfg, np.random.default_rng(seed))
+    for name, structure, seed in SAMPLES:
+        pattern = simulate(_sample_config(structure), np.random.default_rng(seed))
         path = Path("data/sample") / f"{name}.npz"
         save_pattern(path, pattern)
         print(f"wrote {path}  ({pattern.label}, {pattern.meta['n_spots']} spots)")
 
 
 def _cmd_gallery(args: argparse.Namespace) -> None:
-    patterns = []
-    for name, structure, dose, seed in SAMPLES:
-        cfg = SimConfig(structure=structure, dose=dose)
-        patterns.append(simulate(cfg, np.random.default_rng(seed)))
+    patterns = [
+        simulate(_sample_config(structure), np.random.default_rng(seed)) for _, structure, seed in SAMPLES
+    ]
     out = args.out or "figures/pattern_gallery.png"
     plot_pattern_gallery(patterns, out, title="Simulated zone-axis diffraction, one per structure")
     print(f"wrote {out}")
@@ -159,7 +167,7 @@ def _cmd_demo(args: argparse.Namespace) -> None:
 
     model = load_pattern_model(args.model or DEFAULT_MODELS["pattern"])
     correct = 0
-    for name, structure, dose, seed in SAMPLES:
+    for name, structure, seed in SAMPLES:
         pattern = load_pattern(Path("data/sample") / f"{name}.npz")
         pred = LABELS[int(predict_pattern(model, pattern.image[None])[0])]
         ok = pred == pattern.label
