@@ -1,5 +1,7 @@
 # diffraction-structure-classifier
 
+*Origin: Originally developed during the 4th Summer School on ML/AI for Electron Microscopy (June 2026); refactored and open-sourced in July 2026.*
+
 Identify the crystal structure type behind a simulated electron diffraction
 pattern. The repository ships a kinematical diffraction simulator with exact
 ground truth, three classifiers on three different views of the same pattern (a
