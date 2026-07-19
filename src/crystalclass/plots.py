@@ -57,7 +57,11 @@ def plot_confusion_matrix(cm: np.ndarray, path: str | Path, title: str = "") -> 
 
 
 def plot_pattern_gallery(
-    patterns: list[Pattern], path: str | Path, title: str = "", cols: int | None = None
+    patterns: list[Pattern],
+    path: str | Path,
+    title: str = "",
+    cols: int | None = None,
+    dpi: int = 130,
 ) -> None:
     """Save a labelled grid of diffraction patterns.
 
@@ -67,6 +71,8 @@ def plot_pattern_gallery(
         title: Optional suptitle.
         cols: Columns in the panel grid. Defaults to a single row (up to six
             across), which keeps the original strip layout unchanged.
+        dpi: Figure resolution. Defaults to the strip's 130; the 2x3 grid uses
+            a higher value so its short side clears 1080 px for social posts.
     """
     n = len(patterns)
     cols = min(n, 6) if cols is None else cols
@@ -88,7 +94,7 @@ def plot_pattern_gallery(
         # not collide with the dark bottom edge of the panel above it. The
         # single-row strip is unaffected.
         fig.subplots_adjust(hspace=0.32)
-    fig.savefig(path, dpi=130)
+    fig.savefig(path, dpi=dpi)
     plt.close(fig)
 
 
