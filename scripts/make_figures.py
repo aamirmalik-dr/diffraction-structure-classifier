@@ -59,6 +59,14 @@ def gallery() -> None:
         FIGURES / "pattern_gallery.png",
         title="Simulated zone-axis diffraction, one per structure",
     )
+    # A 2x3 version of the same six panels for square-ish social layouts;
+    # the 1x6 strip above stays as the README hero.
+    plot_pattern_gallery(
+        patterns,
+        FIGURES / "pattern_gallery_grid.png",
+        title="Simulated zone-axis diffraction, one per structure",
+        cols=3,
+    )
 
 
 def sweeps() -> None:
