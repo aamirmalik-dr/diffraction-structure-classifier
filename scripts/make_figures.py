@@ -66,6 +66,7 @@ def gallery() -> None:
         FIGURES / "pattern_gallery_grid.png",
         title="Simulated zone-axis diffraction, one per structure",
         cols=3,
+        dpi=235,
     )
 
 
