@@ -56,10 +56,20 @@ def plot_confusion_matrix(cm: np.ndarray, path: str | Path, title: str = "") -> 
     plt.close(fig)
 
 
-def plot_pattern_gallery(patterns: list[Pattern], path: str | Path, title: str = "") -> None:
-    """Save a labelled grid of diffraction patterns."""
+def plot_pattern_gallery(
+    patterns: list[Pattern], path: str | Path, title: str = "", cols: int | None = None
+) -> None:
+    """Save a labelled grid of diffraction patterns.
+
+    Args:
+        patterns: Patterns to draw, one per panel.
+        path: Output image path.
+        title: Optional suptitle.
+        cols: Columns in the panel grid. Defaults to a single row (up to six
+            across), which keeps the original strip layout unchanged.
+    """
     n = len(patterns)
-    cols = min(n, 6)
+    cols = min(n, 6) if cols is None else cols
     rows = int(np.ceil(n / cols))
     fig, axes = plt.subplots(rows, cols, figsize=(2.1 * cols, 2.35 * rows))
     axes = np.atleast_1d(axes).ravel()
@@ -73,6 +83,11 @@ def plot_pattern_gallery(patterns: list[Pattern], path: str | Path, title: str =
     if title:
         fig.suptitle(title, y=1.0)
     fig.tight_layout()
+    if rows > 1:
+        # Multi-row grids need breathing room so a panel's two-line title does
+        # not collide with the dark bottom edge of the panel above it. The
+        # single-row strip is unaffected.
+        fig.subplots_adjust(hspace=0.32)
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
