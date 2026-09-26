@@ -1,5 +1,7 @@
 # diffraction-structure-classifier
 
+[![ci](https://github.com/aamirmalik-dr/diffraction-structure-classifier/actions/workflows/ci.yml/badge.svg)](https://github.com/aamirmalik-dr/diffraction-structure-classifier/actions/workflows/ci.yml)
+
 Identify the crystal structure type behind a simulated electron diffraction
 pattern. The repository ships a kinematical diffraction simulator with exact
 ground truth, three classifiers on three different views of the same pattern (a
